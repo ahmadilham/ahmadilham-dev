@@ -16,9 +16,34 @@ const { Content } = await render(note);
 
 const fmt = (d: Date) =>
   d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+const canonical = new URL(`/notes/${note.id}/`, Astro.site).href;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: note.data.title,
+  description: note.data.standfirst,
+  datePublished: note.data.date.toISOString(),
+  url: canonical,
+  mainEntityOfPage: canonical,
+  author: {
+    '@type': 'Person',
+    name: 'Ahmad Ilham',
+    url: 'https://ahmadilham.dev',
+  },
+  ...(note.data.source && { isBasedOn: note.data.source }),
+  ...(note.data.topic && { keywords: note.data.topic }),
+};
 ---
 
-<Base title={`${note.data.title} — Ahmad Ilham`} description={note.data.standfirst}>
+<Base
+  title={`${note.data.title} — Ahmad Ilham`}
+  description={note.data.standfirst}
+  type="article"
+  publishedTime={note.data.date.toISOString()}
+  jsonLd={jsonLd}
+>
   <main class="wrap note">
     <a class="back" href="/">&larr; All notes</a>
 
@@ -26,7 +51,7 @@ const fmt = (d: Date) =>
       <header class="note-head">
         <p class="note-topline">
           <span class="eyebrow">{note.data.topic}</span>
-          <span class="note-date">{fmt(note.data.date)}</span>
+          <time class="note-date" datetime={note.data.date.toISOString()}>{fmt(note.data.date)}</time>
         </p>
         <h1 class="note-title">{note.data.title}</h1>
         <p class="note-stand">{note.data.standfirst}</p>
