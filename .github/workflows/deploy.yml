@@ -27,7 +27,9 @@ jobs:
 
       - name: Install, build, and upload the site
         uses: withastro/action@v3
-        # Defaults: path = repo root, node-version = 20, package manager auto-detected
+        with:
+          # Astro 6 requires Node >=22.12.0; the action defaults to 20
+          node-version: 22
 
   deploy:
     needs: build
