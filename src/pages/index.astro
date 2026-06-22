@@ -1,0 +1,178 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const notes = (await getCollection('notes', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+---
+
+<Base title="Ahmad Ilham — engineering notes">
+  <main>
+    <!-- ===== Hero: a stated point of view ===== -->
+    <header class="hero">
+      <div class="wrap">
+        <p class="eyebrow">VP of Engineering</p>
+        <h1 class="hero-title">Ahmad Ilham</h1>
+        <p class="hero-thesis">
+          Most engineering decisions aren't really about the technology.
+          They're about the <em>team</em> holding it, the
+          <em>expectations</em> around it, and the tradeoffs you're willing
+          to name out loud. These are short notes on leading software work —
+          one position per entry.
+        </p>
+        <nav class="hero-nav" aria-label="Profiles">
+          <a href="https://linkedin.com/in/ahmadilham">LinkedIn</a>
+          <span class="sep">/</span>
+          <a href="https://github.com/ahmadilham">GitHub</a>
+          <span class="sep">/</span>
+          <a href="mailto:ahmadilham.h@gmail.com">Email</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- ===== Notes: the logbook ===== -->
+    <section class="log wrap" aria-labelledby="notes-head">
+      <h2 id="notes-head" class="section-label">
+        <span class="eyebrow">The Notes</span>
+      </h2>
+
+      <ol class="entries" role="list">
+        {notes.map((note, i) => (
+          <li class="entry">
+            <a class="entry-link" href={`/notes/${note.id}/`}>
+              <span class="entry-num">{String(notes.length - i).padStart(2, '0')}</span>
+              <span class="entry-body">
+                <span class="entry-topline">
+                  <span class="entry-topic">{note.data.topic}</span>
+                  <span class="entry-date">{fmt(note.data.date)}</span>
+                </span>
+                <span class="entry-title">{note.data.title}</span>
+                <span class="entry-stand">{note.data.standfirst}</span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+
+      {notes.length === 0 && (
+        <p class="empty">First note lands soon.</p>
+      )}
+    </section>
+  </main>
+
+  <style>
+    /* ---------- hero ---------- */
+    .hero {
+      padding: clamp(4rem, 12vh, 8rem) 0 clamp(2.5rem, 6vh, 4rem);
+    }
+    .hero-title {
+      font-family: var(--mono);
+      font-weight: 600;
+      font-size: clamp(2.4rem, 7vw, 4rem);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+      margin: 0.5rem 0 1.5rem;
+    }
+    .hero-thesis {
+      max-width: 54ch;
+      font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+      line-height: 1.6;
+      color: var(--ink-soft);
+    }
+    .hero-thesis em {
+      font-style: normal;
+      color: var(--ink);
+      border-bottom: 2px solid var(--amber);
+      padding-bottom: 1px;
+    }
+    .hero-nav {
+      margin-top: 2rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--ink-faint);
+    }
+    .hero-nav a { color: var(--ink-soft); }
+    .hero-nav a:hover { color: var(--amber); text-decoration: none; }
+    .hero-nav .sep { margin: 0 0.6rem; color: var(--border); }
+
+    /* ---------- section label ---------- */
+    .section-label {
+      margin-bottom: 1.75rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--hair);
+    }
+
+    /* ---------- entries ---------- */
+    .entries { list-style: none; display: flex; flex-direction: column; }
+    .entry { border-bottom: 1px solid var(--hair); }
+
+    .entry-link {
+      display: grid;
+      grid-template-columns: var(--rail) 1fr;
+      gap: 0.5rem;
+      padding: 1.6rem 0.5rem 1.6rem 0;
+      color: inherit;
+      transition: background 0.18s ease;
+    }
+    .entry-link:hover { text-decoration: none; background: var(--surface); }
+    .entry-link:hover .entry-num { color: var(--amber); }
+    .entry-link:hover .entry-title { color: var(--amber); }
+
+    .entry-num {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--ink-faint);
+      padding-left: 0.25rem;
+      transition: color 0.18s ease;
+    }
+    .entry-body { display: flex; flex-direction: column; gap: 0.35rem; padding-right: 0.5rem; }
+
+    .entry-topline {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .entry-topic { color: var(--amber); font-weight: 600; }
+    .entry-date { color: var(--ink-faint); }
+
+    .entry-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--ink);
+      transition: color 0.18s ease;
+    }
+    .entry-stand {
+      font-size: 0.96rem;
+      color: var(--ink-soft);
+      max-width: var(--measure);
+    }
+
+    .empty {
+      font-family: var(--mono);
+      color: var(--ink-faint);
+      padding: 2rem 0;
+    }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 600px) {
+      .entry-link {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding-left: 0;
+      }
+      .entry-num {
+        padding-left: 0;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</Base>
