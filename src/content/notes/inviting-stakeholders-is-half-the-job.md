@@ -7,6 +7,15 @@ source: "https://www.linkedin.com/advice/3/how-do-you-show-stakeholders-value-yo
 draft: false
 ---
 
+> The advice I gave on LinkedIn: "Inviting stakeholders to participate in
+> refining the product backlog is an excellent approach. However, it is equally
+> essential to manage expectations, not all suggestions will be implemented, at
+> least not immediately. Clear communications on the rationale behind
+> prioritization decisions help manage stakeholders' expectations."
+
+I still believe that. But the half worth dwelling on is the second one — what
+the invitation quietly promises — so that's the part I want to pull apart.
+
 Inviting stakeholders to help refine and prioritize the product backlog is
 an excellent move. It builds buy-in, surfaces context you'd otherwise miss,
 and makes people feel ownership over where the product is going.

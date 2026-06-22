@@ -7,6 +7,16 @@ source: "https://www.linkedin.com/advice/0/how-do-you-select-software-design-too
 draft: false
 ---
 
+> The advice I gave on LinkedIn: "Factor in the skill set, expertise, and
+> familiarity of the team with the proposed tools. Leveraging tools that the
+> team is comfortable with can expedite the design phase, but it is also
+> essential to assess if it's the right time to introduce new tools that might
+> offer more benefits in the long run."
+
+That's true, and I'd give the same advice again. What I want to draw out is the
+second sentence — the part about timing — because that's where the real
+judgment lives.
+
 When a team is deciding which tools to use for a piece of work, the
 discussion usually fixates on the tools themselves — features, benchmarks,
 what's trendy. The input that gets undervalued is the team standing in front
