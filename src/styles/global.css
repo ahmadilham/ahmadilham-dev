@@ -16,7 +16,7 @@
 
   --ink:       #e8eaed;   /* primary text */
   --ink-soft:  #aeb4bd;   /* secondary */
-  --ink-faint: #6b7280;   /* captions, meta */
+  --ink-faint: #7e8590;   /* captions, meta — AA (≥4.5:1) on --bg */
 
   --amber:     #e0a82e;   /* the one accent — a marker's ink */
   --amber-dim: #5c4a1e;
