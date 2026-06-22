@@ -7,9 +7,31 @@ const notes = (await getCollection('notes', ({ data }) => !data.draft))
 
 const fmt = (d: Date) =>
   d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+
+const site = Astro.site?.href ?? 'https://ahmadilham.dev/';
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Ahmad Ilham — engineering notes',
+    url: site,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Ahmad Ilham',
+    jobTitle: 'VP of Engineering',
+    url: site,
+    sameAs: [
+      'https://linkedin.com/in/ahmadilham',
+      'https://github.com/ahmadilham',
+    ],
+  },
+];
 ---
 
-<Base title="Ahmad Ilham — engineering notes">
+<Base title="Ahmad Ilham — engineering notes" jsonLd={jsonLd}>
   <main>
     <!-- ===== Hero: a stated point of view ===== -->
     <header class="hero">
@@ -47,7 +69,7 @@ const fmt = (d: Date) =>
               <span class="entry-body">
                 <span class="entry-topline">
                   <span class="entry-topic">{note.data.topic}</span>
-                  <span class="entry-date">{fmt(note.data.date)}</span>
+                  <time class="entry-date" datetime={note.data.date.toISOString()}>{fmt(note.data.date)}</time>
                 </span>
                 <span class="entry-title">{note.data.title}</span>
                 <span class="entry-stand">{note.data.standfirst}</span>
