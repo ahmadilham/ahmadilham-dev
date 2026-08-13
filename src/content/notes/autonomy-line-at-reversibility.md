@@ -9,7 +9,7 @@ draft: false
 > From the operating rules in our main repo: "Act without confirmation on
 > standard tasks. Make routine decisions autonomously and keep working rather
 > than asking 'shall I continue?'... NEVER push, open/merge a PR, or post a
-> comment without explicit user confirmation. Committing locally is fine;
+> comment without explicit user confirmation... Committing locally is fine;
 > commits are reversible and stay on your machine until pushed."
 
 We wrote that for coding agents, but I've come to think it's the better rule
@@ -52,23 +52,25 @@ There is a fair objection to writing any of this down, and it arrived while I
 was drafting. Anthropic published [what it learned from deleting more than 80%
 of Claude Code's system
 prompt](https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models)
-for its newest models, with no measurable loss on its coding evaluations. The
-principle it draws out is *rules to judgment*: guidance written to stop a
-weaker model doing something stupid becomes noise for a stronger one, so you
-delete it and let the thing decide.
+for its newest models, with no measurable loss on its coding evaluations. Its
+first then-and-now pair is blunt about it: then, give the model rules; now, let
+the model use judgment. Guidance written to stop a weaker model doing something
+stupid becomes noise for a stronger one, so you delete it and let the thing
+decide.
 
 I think that argument is right and that it sharpens this note rather than
-undercutting it. What it deletes is guidance that a capable reader could have
-derived from context — house style, comment density, which idiom we favour. A
-capable reader can derive all of that by looking around. What no amount of
-capability derives is whether a push is recoverable *here*, in this
-organisation, with these people reading the notification. That isn't taste, and
-it isn't inferable from the codebase; it's a fact about the environment the
-work lands in. Which is exactly the residue you would expect a good deletion
-pass to leave behind — and a decent test for any rule you are about to write
-down. If a competent newcomer would arrive at it by reading the surrounding
-work, delete it. If they would only learn it by getting it wrong in front of
-everyone, keep it.
+undercutting it. What a pass like that deletes is instruction the model can now
+supply for itself — sometimes by reading the surrounding code, sometimes just
+because it got better and no longer needs the worked example or the reminder to
+check its work. Either way the words had become redundant with the thing reading
+them. What no amount of capability supplies is whether a push is recoverable
+*here*, in this organization, with these people reading the notification. That
+isn't taste, and it isn't sitting in the codebase waiting to be read; it's a
+fact about the environment the work lands in. Which is exactly the residue you
+would expect a good deletion pass to leave behind — and a decent test for any
+rule you are about to write down. If the person doing the work would arrive at
+it on their own, from the work itself, delete it. If they would only learn it by
+getting it wrong in front of everyone, keep it.
 
 Which gives me the question I now ask about any delegated action, in place of
 guessing at severity: if this turns out to be wrong, who has to be involved to
