@@ -6,7 +6,11 @@ export default defineConfig({
   integrations: [sitemap()],
   markdown: {
     shikiConfig: {
-      theme: 'github-dark',
+      // Two themes: the design ships a light default with a dark toggle.
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark',
+      },
       wrap: true,
     },
   },

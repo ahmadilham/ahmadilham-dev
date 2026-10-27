@@ -5,8 +5,24 @@ import { getCollection } from 'astro:content';
 const notes = (await getCollection('notes', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
-const fmt = (d: Date) =>
+// The note in the featured card; falls back to the newest one.
+const featured = notes.find((n) => n.data.featured) ?? notes[0];
+const rest = notes.filter((n) => n.id !== featured?.id);
+
+// Each note keeps its logbook number: newest gets the highest.
+const numberOf = (id: string) => notes.length - notes.findIndex((n) => n.id === id);
+
+const topics = [...new Set(notes.map((n) => n.data.topic))].sort();
+
+const fmtShort = (d: Date) =>
   d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+
+const oldest = notes.length ? notes[notes.length - 1].data.date : null;
+const newest = notes.length ? notes[0].data.date : null;
+const span =
+  oldest && newest ? `${oldest.getFullYear()} – ${newest.getFullYear()}` : '—';
+const spanLabel =
+  oldest && newest ? `${fmtShort(oldest)} to ${fmtShort(newest)}` : 'No notes yet';
 
 const site = Astro.site?.href ?? 'https://ahmadilham.dev/';
 
@@ -32,169 +48,423 @@ const jsonLd = [
 ---
 
 <Base title="Ahmad Ilham — engineering notes" jsonLd={jsonLd}>
+  <!-- ===== Hero — sits under the header's dot field ===== -->
+  <section class="wrap hero" slot="top">
+    <p class="eyebrow">VP of Engineering &middot; Engineering &amp; leadership notes</p>
+    <h1 class="hero-title">
+      Most engineering decisions aren't really about the technology.
+    </h1>
+    <p class="hero-lede">
+      They depend on the team, the expectations, and the tradeoffs people are
+      willing to state openly. These are short, opinionated notes on leading
+      software teams.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#notes">
+        Read the notes
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14" /><path d="M19 12l-7 7-7-7" /></svg>
+      </a>
+      <a class="btn btn-secondary" href="https://linkedin.com/in/ahmadilham">LinkedIn</a>
+      <a class="btn btn-secondary" href="https://github.com/ahmadilham">GitHub</a>
+      <a class="btn btn-secondary" href="mailto:ahmadilham.h@gmail.com">Email</a>
+    </div>
+  </section>
+
   <main>
-    <!-- ===== Hero: a stated point of view ===== -->
-    <header class="hero">
-      <div class="wrap">
-        <p class="eyebrow">VP of Engineering</p>
-        <h1 class="hero-title">Ahmad Ilham</h1>
-        <p class="hero-thesis">
-          Most engineering decisions aren't really about the technology.
-          They're about the <em>team</em> holding it, the
-          <em>expectations</em> around it, and the tradeoffs you're willing
-          to name out loud. These are short notes on leading software work —
-          one position per entry.
-        </p>
-        <nav class="hero-nav" aria-label="Profiles">
-          <a href="https://linkedin.com/in/ahmadilham">LinkedIn</a>
-          <span class="sep">/</span>
-          <a href="https://github.com/ahmadilham">GitHub</a>
-          <span class="sep">/</span>
-          <a href="mailto:ahmadilham.h@gmail.com">Email</a>
-        </nav>
+    <!-- ===== Stats strip ===== -->
+    <section class="wrap stats-wrap" aria-label="At a glance">
+      <dl class="stats">
+        <div class="stat">
+          <dt class="stat-num">{notes.length}</dt>
+          <dd class="stat-label">notes published</dd>
+        </div>
+        <div class="stat">
+          <dt class="stat-num">{span}</dt>
+          <dd class="stat-label">{spanLabel}</dd>
+        </div>
+        <div class="stat">
+          <dt class="stat-num">9+ years</dt>
+          <dd class="stat-label">leading engineering teams</dd>
+        </div>
+        <div class="stat">
+          <dt class="stat-num">UTC+7</dt>
+          <dd class="stat-label">Yogyakarta, Indonesia</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- ===== The notes ===== -->
+    <section id="notes" class="wrap notes" aria-labelledby="notes-head">
+      <div class="notes-head">
+        <h2 id="notes-head">Latest notes</h2>
+        <div class="chips" role="group" aria-label="Filter notes by topic">
+          <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
+          {topics.map((topic) => (
+            <button type="button" class="chip" data-filter={topic} aria-pressed="false">{topic}</button>
+          ))}
+        </div>
       </div>
-    </header>
 
-    <!-- ===== Notes: the logbook ===== -->
-    <section class="log wrap" aria-labelledby="notes-head">
-      <h2 id="notes-head" class="section-label">
-        <span class="eyebrow">The Notes</span>
-      </h2>
+      {featured && (
+        <a class="featured" href={`/notes/${featured.id}/`} data-topic={featured.data.topic}>
+          <span class="featured-meta">
+            <span class="featured-tag">Featured</span>
+            <span class="featured-topic">{featured.data.topic}</span>
+          </span>
+          <span class="featured-title">{featured.data.title}</span>
+          <span class="featured-cta">
+            Read the note
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+          </span>
+        </a>
+      )}
 
-      <ol class="entries" role="list">
-        {notes.map((note, i) => (
-          <li class="entry">
-            <a class="entry-link" href={`/notes/${note.id}/`}>
-              <span class="entry-num">{String(notes.length - i).padStart(2, '0')}</span>
-              <span class="entry-body">
-                <span class="entry-topline">
-                  <span class="entry-topic">{note.data.topic}</span>
-                  <time class="entry-date" datetime={note.data.date.toISOString()}>{fmt(note.data.date)}</time>
-                </span>
-                <span class="entry-title">{note.data.title}</span>
-                <span class="entry-stand">{note.data.standfirst}</span>
+      <ol class="rows" role="list">
+        {rest.map((note) => (
+          <li class="row-item" data-topic={note.data.topic}>
+            <a class="row" href={`/notes/${note.id}/`}>
+              <span class="row-gutter">
+                <span>No. {String(numberOf(note.id)).padStart(2, '0')} &middot; {fmtShort(note.data.date)}</span>
+                <span class="row-topic">{note.data.topic}</span>
               </span>
+              <span class="row-body">
+                <span class="row-title">{note.data.title}</span>
+                <span class="row-sum">{note.data.standfirst}</span>
+              </span>
+              <svg class="row-arrow" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7" /><path d="M8 7h9v9" /></svg>
             </a>
           </li>
         ))}
       </ol>
 
-      {notes.length === 0 && (
-        <p class="empty">First note lands soon.</p>
-      )}
+      <p class="rows-empty" hidden>No notes under that topic yet.</p>
+      {notes.length === 0 && <p class="rows-empty">First note lands soon.</p>}
+    </section>
+
+    <!-- ===== About ===== -->
+    <section id="about" class="wrap about-wrap" aria-labelledby="about-head">
+      <div class="about">
+        <div class="about-lead">
+          <p class="eyebrow" id="about-head">About</p>
+          <p class="about-head">
+            VP of Engineering at Polyrific, leading a distributed team across
+            Indonesia, the Dominican Republic and the US.
+          </p>
+        </div>
+        <div class="about-body">
+          <p>
+            I work across .NET, Azure and data platforms, and spend most of my
+            time on the decisions around the code: review standards, delegation,
+            stakeholder expectations, and how teams adopt agentic coding.
+          </p>
+          <p>[Add one line on what readers can reach out about.]</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Sister site ===== -->
+    <section class="wrap sister-wrap">
+      <a class="sister" href="https://www.csharp-indonesia.com/">
+        <span class="sister-mark" aria-hidden="true">C#<span class="sister-mark-dot"></span></span>
+        <span class="sister-copy">
+          <span class="sister-title">Also writing in Bahasa Indonesia: C# Indonesia</span>
+          <span class="sister-sum">Practical notes on modern C#/.NET and agentic coding, from real projects.</span>
+        </span>
+        <span class="sister-cta">
+          Visit
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7" /><path d="M8 7h9v9" /></svg>
+        </span>
+      </a>
     </section>
   </main>
+
+  <script is:inline>
+    // The topic chips filter the list in place; there is no archive page.
+    (() => {
+      const chips = [...document.querySelectorAll('.chip[data-filter]')];
+      const items = [...document.querySelectorAll('.row-item[data-topic]')];
+      const featured = document.querySelector('.featured[data-topic]');
+      const empty = document.querySelector('.rows-empty[hidden]');
+      if (!chips.length) return;
+
+      chips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+          const pick = chip.dataset.filter;
+          chips.forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+
+          let shown = 0;
+          items.forEach((item) => {
+            const match = pick === 'all' || item.dataset.topic === pick;
+            item.hidden = !match;
+            if (match) shown += 1;
+          });
+          if (featured) {
+            const match = pick === 'all' || featured.dataset.topic === pick;
+            featured.hidden = !match;
+            if (match) shown += 1;
+          }
+          if (empty) empty.hidden = shown > 0;
+        });
+      });
+    })();
+  </script>
 
   <style>
     /* ---------- hero ---------- */
     .hero {
-      padding: clamp(4rem, 12vh, 8rem) 0 clamp(2.5rem, 6vh, 4rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+      padding-top: clamp(3.5rem, 9vw, 6rem);
+      padding-bottom: 3.5rem;
     }
     .hero-title {
-      font-family: var(--mono);
-      font-weight: 600;
-      font-size: clamp(2.4rem, 7vw, 4rem);
+      max-width: 900px;
+      margin: 0;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
       line-height: 1.02;
-      letter-spacing: -0.03em;
-      margin: 0.5rem 0 1.5rem;
+      letter-spacing: -0.04em;
+      font-weight: 600;
     }
-    .hero-thesis {
-      max-width: 54ch;
-      font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+    .hero-lede {
+      max-width: 640px;
+      margin: 0;
+      font-size: 1.1875rem;
       line-height: 1.6;
-      color: var(--ink-soft);
+      color: var(--muted);
     }
-    .hero-thesis em {
-      font-style: normal;
-      color: var(--ink);
-      border-bottom: 2px solid var(--amber);
-      padding-bottom: 1px;
-    }
-    .hero-nav {
-      margin-top: 2rem;
-      font-family: var(--mono);
-      font-size: 0.85rem;
-      color: var(--ink-faint);
-    }
-    .hero-nav a { color: var(--ink-soft); }
-    .hero-nav a:hover { color: var(--amber); text-decoration: none; }
-    .hero-nav .sep { margin: 0 0.6rem; color: var(--border); }
-
-    /* ---------- section label ---------- */
-    .section-label {
-      margin-bottom: 1.75rem;
-      padding-bottom: 0.85rem;
-      border-bottom: 1px solid var(--hair);
-    }
-
-    /* ---------- entries ---------- */
-    .entries { list-style: none; display: flex; flex-direction: column; }
-    .entry { border-bottom: 1px solid var(--hair); }
-
-    .entry-link {
-      display: grid;
-      grid-template-columns: var(--rail) 1fr;
-      gap: 0.5rem;
-      padding: 1.6rem 0.5rem 1.6rem 0;
-      color: inherit;
-      transition: background 0.18s ease;
-    }
-    .entry-link:hover { text-decoration: none; background: var(--surface); }
-    .entry-link:hover .entry-num { color: var(--amber); }
-    .entry-link:hover .entry-title { color: var(--amber); }
-
-    .entry-num {
-      font-family: var(--mono);
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--ink-faint);
-      padding-left: 0.25rem;
-      transition: color 0.18s ease;
-    }
-    .entry-body { display: flex; flex-direction: column; gap: 0.35rem; padding-right: 0.5rem; }
-
-    .entry-topline {
+    .hero-actions {
       display: flex;
-      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      padding-top: 0.5rem;
+    }
+
+    /* ---------- stats ---------- */
+    .stats-wrap { padding-bottom: 4.5rem; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+    .stat {
+      padding: 1.375rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .stat-num { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; }
+    .stat-label {
+      margin: 0;
+      font-family: var(--mono);
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+
+    /* ---------- notes ---------- */
+    .notes {
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+      padding-bottom: 5rem;
+    }
+    .notes-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .notes-head h2 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+    /* ---------- featured card ---------- */
+    .featured {
+      display: flex;
+      flex-direction: column;
+      gap: 1.125rem;
+      padding: 2.5rem;
+      border-radius: 18px;
+      background: var(--feat-bg);
+      border: 1px solid var(--feat-border);
+      color: var(--feat-ink);
+    }
+    .featured:hover { text-decoration: none; }
+    .featured:hover .featured-cta { gap: 0.75rem; }
+    .featured-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
       gap: 0.75rem;
       font-family: var(--mono);
-      font-size: 0.72rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      font-size: 0.75rem;
     }
-    .entry-topic { color: var(--amber); font-weight: 600; }
-    .entry-date { color: var(--ink-faint); }
-
-    .entry-title {
-      font-size: 1.2rem;
+    .featured-tag {
+      padding: 0.3125rem 0.625rem;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #FFFFFF;
+    }
+    .featured-topic { color: var(--feat-muted); }
+    .featured-title {
+      max-width: 820px;
+      font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
       font-weight: 600;
-      line-height: 1.3;
+    }
+    .featured-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9375rem;
+      color: var(--feat-soft);
+      transition: gap 0.15s ease;
+    }
+
+    /* ---------- note rows ---------- */
+    .rows { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 0.75rem 2rem;
+      padding: 1.375rem 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 14px;
       color: var(--ink);
-      transition: color 0.18s ease;
+      transition: border-color 0.15s ease;
     }
-    .entry-stand {
-      font-size: 0.96rem;
-      color: var(--ink-soft);
-      max-width: var(--measure);
-    }
-
-    .empty {
+    .row:hover { text-decoration: none; border-color: var(--border); }
+    .row:hover .row-title { color: var(--accent-text); }
+    .row-gutter {
+      flex: 0 0 180px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+      padding-top: 0.25rem;
       font-family: var(--mono);
-      color: var(--ink-faint);
-      padding: 2rem 0;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .row-topic { color: var(--accent-text); }
+    .row-body {
+      flex: 999 1 420px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+    }
+    .row-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      line-height: 1.3;
+      transition: color 0.15s ease;
+    }
+    .row-sum { font-size: 0.9375rem; line-height: 1.55; color: var(--muted); }
+    .row-arrow { margin-top: 0.25rem; flex-shrink: 0; color: var(--muted); }
+
+    .rows-empty {
+      font-family: var(--mono);
+      font-size: 0.875rem;
+      color: var(--muted);
+      padding: 1.5rem 0;
     }
 
-    /* ---------- responsive ---------- */
-    @media (max-width: 600px) {
-      .entry-link {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-        padding-left: 0;
-      }
-      .entry-num {
-        padding-left: 0;
-        font-size: 0.8rem;
-      }
+    /* ---------- about ---------- */
+    .about-wrap { padding-bottom: 5rem; }
+    .about {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2.5rem;
+      padding: 2.5rem;
+      border-radius: 18px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+    }
+    .about-lead { flex: 1 1 280px; display: flex; flex-direction: column; gap: 0.625rem; }
+    .about-head {
+      margin: 0;
+      font-size: 1.625rem;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+    }
+    .about-body {
+      flex: 1 1 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--body);
+    }
+
+    /* ---------- sister site ---------- */
+    .sister-wrap { padding-bottom: 6rem; }
+    .sister {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1.75rem 2rem;
+      border-radius: 18px;
+      background: var(--sister-bg);
+      color: var(--ink);
+    }
+    .sister:hover { text-decoration: none; }
+    .sister:hover .sister-cta { gap: 0.75rem; }
+    .sister-mark {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--mark-bg);
+      color: var(--mark-fg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-weight: 500;
+      font-size: 1.0625rem;
+      flex-shrink: 0;
+    }
+    .sister-mark-dot {
+      position: absolute;
+      right: 7px;
+      bottom: 7px;
+      width: 7px;
+      height: 7px;
+      border-radius: 4px;
+      background: var(--violet);
+    }
+    .sister-copy { flex: 999 1 360px; display: flex; flex-direction: column; gap: 0.25rem; }
+    .sister-title { font-size: 1.1875rem; font-weight: 600; letter-spacing: -0.015em; }
+    .sister-sum { font-size: 0.9375rem; color: var(--sister-muted); }
+    .sister-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--sister-text);
+      transition: gap 0.15s ease;
+    }
+
+    @media (max-width: 640px) {
+      .featured { padding: 1.75rem; }
+      .about { padding: 1.75rem; gap: 1.75rem; }
+      .sister { padding: 1.5rem; }
+      .row { padding: 1.25rem; }
+      .row-gutter { flex-basis: 100%; flex-direction: row; gap: 0.75rem; padding-top: 0; }
     }
   </style>
 </Base>
