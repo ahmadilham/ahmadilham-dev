@@ -12,6 +12,9 @@ const notes = defineCollection({
     topic: z.string(),
     // Optional: the LinkedIn article this grew out of.
     source: z.string().url().optional(),
+    // Pulls the note into the featured card on the home page. At most one
+    // should set this; the home page falls back to the newest note.
+    featured: z.boolean().default(false),
     draft: z.boolean().default(false),
   }),
 });

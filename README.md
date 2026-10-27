@@ -65,6 +65,7 @@ standfirst: "One-sentence summary shown under the title and on the home list."
 date: 2024-06-01
 topic: "Tooling"          # short label, e.g. Tooling / Stakeholders / Hiring
 source: "https://..."      # optional — the LinkedIn article it grew from
+featured: false            # optional — pulls it into the featured card on the home page
 draft: false               # set true to hide it
 ---
 
@@ -75,7 +76,10 @@ Console.WriteLine("hello");
 \`\`\`
 ```
 
-The home page auto-lists notes newest-first and numbers them.
+The home page auto-lists notes newest-first and numbers them. One note can set
+`featured: true` to fill the large card at the top of the list; if none does, the
+newest note goes there. The topic chips above the list are built from the topics
+in use and filter the list in the browser.
 
 ## Deploy (GitHub Pages)
 

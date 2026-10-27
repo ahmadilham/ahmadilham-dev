@@ -3,6 +3,7 @@ title: "An automated check that can fail silently is worse than the rule it repl
 standfirst: "The usual move is to take a standard people keep forgetting and put it in a machine, because a machine doesn't get tired. But a machine that isn't running looks exactly like a machine that found nothing — so automation quietly trades an unreliable control for an invisible one."
 date: 2026-08-26
 topic: "Risk"
+featured: true
 draft: false
 ---
 
